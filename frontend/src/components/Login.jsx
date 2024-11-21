@@ -1,15 +1,18 @@
-import { React, useState } from "react";
+import { React, useContext, useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import styles from "../styles/styles";
 import { server } from "../utils/server";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { UserContext } from "@/context/context";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
+
+  const { isAuthen, setIsAuthen } = useContext(UserContext);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -19,10 +22,8 @@ const Login = () => {
       { withCredentials: true }
     );
 
-    console.log("data", data);
-
     if (data.success) {
-      navigate("/");
+      window.location.reload();
     }
   };
 

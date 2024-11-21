@@ -27,7 +27,6 @@ export const getUserChatsMessages = async (
 export const sendUserMessage = async (
   content,
   chatId,
-  receiverId,
   setMessages,
   setLoadingMessages,
   setErrorMessages,
@@ -38,7 +37,6 @@ export const sendUserMessage = async (
     const response = await axios.post(
       `${server}/message`,
       {
-        receiverId,
         content,
         chatId,
       },

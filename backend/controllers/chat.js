@@ -4,6 +4,13 @@ const User = require("../models/user");
 const createOneToOneChat = async (req, res) => {
   const { userId } = req.body;
 
+  if (!userId) {
+    return res.status(500).json({
+      success: false,
+      message: "Pass All Required Details",
+    });
+  }
+
   const myId = req.user._id;
 
   const existsChat = await Chat.find({
@@ -38,7 +45,6 @@ const fetchChats = async (req, res) => {
   try {
     const myId = req.user._id;
 
-    console.log("My Id ", myId);
 
     const chats = await Chat.find({
       users: { $in: [myId] },
@@ -82,13 +88,53 @@ const fetchChatsById = async (req, res) => {
 };
 
 const createGroupChat = async (req, res) => {
-  const { users } = req.body;
+  const { users, chatName } = req.body;
+
+  if (!users || !chatName) {
+    return res.status(500).json({
+      success: false,
+      message: "Pass All Required Details",
+    });
+  }
 
   const myId = req.user._id;
+
+  if (users.length < 2) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Atleast Add 2 Users" });
+  }
+
+  try {
+    const allUsers = [...users, myId];
+
+    const data = {
+      chatName,
+      users: allUsers,
+      isGroupChat: true,
+      groupAdmin: myId,
+    };
+
+    const groupChat = await Chat.create(data);
+
+    const chat = await Chat.findById(groupChat._id)
+      .populate("users")
+      .populate("groupAdmin");
+
+    res.status(200).json({
+      success: true,
+      message: "Group Chat Created Successfully",
+      chat,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 // search user for creating a chat
-const searchUserChats = async (req, res) => {
+const searchUser = async (req, res) => {
   const { searchVal } = req.body;
   const myId = req.user._id;
 
@@ -109,7 +155,7 @@ const searchUserChats = async (req, res) => {
         { name: { $regex: regex } }, // Check if `name` starts with searchVal
         { phoneNo: { $regex: regex } }, // Check if `phoneNo` starts with searchVal
       ],
-    });
+    }).limit(5);
 
     if (searchUsers.length === 0) {
       return res.status(404).json({
@@ -166,6 +212,6 @@ module.exports = {
   fetchChats,
   fetchChatsById,
   createGroupChat,
-  searchUserChats,
+  searchUser,
   checkOrCreateChat,
 };

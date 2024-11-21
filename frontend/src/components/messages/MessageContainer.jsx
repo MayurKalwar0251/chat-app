@@ -45,7 +45,6 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
     const msg = await sendUserMessage(
       content,
       chat._id,
-      recId,
       setMessages,
       setLoadingMessages,
       setErrorMessages,
@@ -108,7 +107,6 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
 
   useEffect(() => {
     socket.on("message recieved", (newMsgRcv) => {
-      console.log("WEAREHERE");
 
       setMessages([...messages, newMsgRcv]);
     });
@@ -118,7 +116,6 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
     };
   });
 
-  console.log("SELCTDCHAT", selectedChat);
 
   return (
     <div className="flex h-full flex-col">

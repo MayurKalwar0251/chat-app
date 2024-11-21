@@ -70,8 +70,7 @@ export const getSearchedUsersOrChat = async (
   searchVal,
   setLoadingChats,
   setErrorChats,
-  setSearchedUserAndChats,
-  filteredChats
+  setSearchedUserAndChats
 ) => {
   try {
     setLoadingChats(true);
@@ -122,6 +121,38 @@ export const checkOrCreateChat = async (
       if (!chatExists) {
         setChats([newChat, ...chats]);
       }
+
+      return newChat;
+    }
+  } catch (error) {
+    setErrorChats(error.message);
+    return null; // Return null in case of error
+  } finally {
+    setLoadingChats(false);
+  }
+};
+
+export const createGroupChat = async (
+  chatName,
+  users,
+  setChats,
+  setLoadingChats,
+  setErrorChats,
+  chats
+) => {
+  try {
+    setLoadingChats(true);
+    const response = await axios.post(
+      `${server}/chat/group`,
+      { chatName, users },
+      {
+        withCredentials: true,
+      }
+    );
+
+    if (response.data.success) {
+      const newChat = response.data.chat;
+      setChats([newChat, ...chats]);
 
       return newChat;
     }

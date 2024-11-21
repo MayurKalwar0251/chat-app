@@ -29,7 +29,6 @@ function App() {
     checkCookiesAndDispatch();
   }, []);
 
-
   return (
     <BrowserRouter>
       <Routes>

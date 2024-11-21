@@ -1,2 +1,2 @@
-export const server = "https://chat-app-mh3k.onrender.com/api/v1";
-export const serverHost = "https://chat-app-mh3k.onrender.com";
+export const server = "http://localhost:3000/api/v1";
+export const serverHost = "http://localhost:3000";

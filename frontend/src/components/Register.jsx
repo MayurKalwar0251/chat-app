@@ -21,10 +21,8 @@ const Register = () => {
       { withCredentials: true }
     );
 
-    console.log("USer Details : ", user);
-
     if (data.success) {
-      navigate("/");
+      window.location.reload();
     }
   };
 

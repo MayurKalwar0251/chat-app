@@ -28,7 +28,6 @@ const SearchContainer = () => {
         setLoadingChats,
         setErrorChats,
         setSearchedUserAndChats,
-        searchedUserAndChats
       );
     }
   }

@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Chat = require("../models/chat");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -25,11 +26,7 @@ const createUser = async (req, res) => {
 
   user = await User.create({ name, email, password: hashPass, phoneNo });
 
-  res.status(200).json({
-    success: true,
-    message: "User Created Successfully",
-    user,
-  });
+  sendToken(user, 200, "User Created Successfully", res);
 };
 
 const loginUser = async (req, res) => {
@@ -62,7 +59,6 @@ const loginUser = async (req, res) => {
 
   sendToken(user, 200, "User Logged In Successfully", res);
 };
-
 
 const generateToken = async (userID) => {
   const token = await jwt.sign({ id: userID }, process.env.JWT_SECRET, {
@@ -100,6 +96,49 @@ const getUserDetails = async (req, res) => {
   });
 };
 
+const searchUserChats = async (req, res) => {
+  try {
+    const { searchVal } = req.query; // Get search value from query params
+    const myId = req.user._id; // Logged-in user's ID
+
+    if (!searchVal) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Search value is required." });
+    }
+
+    // Find users by name using regex, excluding the logged-in user
+    const users = await User.find({
+      name: { $regex: searchVal, $options: "i" }, // Case-insensitive regex search
+      _id: { $ne: myId }, // Exclude self
+    }).select("-password"); // Exclude sensitive fields like password
+
+    // Find all chats involving the logged-in user
+    const chats = await Chat.find({ users: myId });
+
+    // Extract IDs of users the logged-in user has already chatted with
+    const existingChatUserIds = chats.flatMap((chat) =>
+      chat.users.filter((userId) => userId.toString() !== myId.toString())
+    );
+
+    // Add a flag to indicate if a chat already exists with the user
+    const usersWithChatFlag = users.map((user) => ({
+      ...user.toObject(),
+      hasChat: existingChatUserIds.some(
+        (chatUserId) => chatUserId.toString() === user._id.toString()
+      ),
+    }));
+
+    res.status(200).json({ success: true, users: usersWithChatFlag });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while searching users.",
+    });
+  }
+};
+
 const updateUser = async (req, res) => {};
 
 module.exports = {
@@ -107,4 +146,5 @@ module.exports = {
   loginUser,
   updateUser,
   getUserDetails,
+  searchUserChats,
 };

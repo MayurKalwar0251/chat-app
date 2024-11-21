@@ -11,11 +11,14 @@ import { ChatMessageContext } from "@/context/messageContext";
 import { checkOrCreateChat, getUserChatById } from "@/context/Chats/Chats";
 import io from "socket.io-client";
 import { server, serverHost } from "@/utils/server";
+import GroupCreateModal from "@/components/GroupCreateModal";
 
 export default function HomePage() {
   const [showMessages, setShowMessages] = React.useState(false);
 
   const [selectedChatUser, setSelectedChatUser] = React.useState(null);
+
+  const [createGroupModal, setCreateGroupModal] = React.useState(false);
 
   const { user } = React.useContext(UserContext);
   const { messages, setMessages, setLoadingMessages, setErrorMessages } =
@@ -65,6 +68,7 @@ export default function HomePage() {
   };
 
   const handleBackToChats = () => {
+    socketRef.current.emit("stop typing", selectedChat);
     setShowMessages(false);
     setSelectedChat(null);
   };
@@ -117,6 +121,14 @@ export default function HomePage() {
 
   return (
     <div className="grid  grid-cols-1 md:grid-cols-[350px_1fr] bg-background h-screen">
+      {createGroupModal && (
+        <GroupCreateModal
+          createGroupModal={createGroupModal}
+          setCreateGroupModal={setCreateGroupModal}
+          setShowMessages={setShowMessages}
+          socket={socketRef.current}
+        />
+      )}
       <div
         className={cn("md:block overflow-x-hidden", {
           "hidden md:block": showMessages,
@@ -127,6 +139,7 @@ export default function HomePage() {
           onSelectChat={handleSelectChat}
           onSelectSearchChat={handleSelectSearchChat}
           socket={socketRef.current}
+          setCreateGroupModal={setCreateGroupModal}
         />
       </div>
       <div

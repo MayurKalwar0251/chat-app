@@ -13,7 +13,13 @@ import {
 import { UserChatContext } from "@/context/chatContext";
 import SearchItem from "./SearchItem";
 
-const ChatList = ({ onSelectChat, chats, onSelectSearchChat, socket }) => {
+const ChatList = ({
+  onSelectChat,
+  chats,
+  onSelectSearchChat,
+  socket,
+  setCreateGroupModal,
+}) => {
   const {
     selectedChat,
     setChats,
@@ -67,13 +73,19 @@ const ChatList = ({ onSelectChat, chats, onSelectSearchChat, socket }) => {
 
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger
+            asChild
+            onClick={() => {
+
+              setCreateGroupModal(true);
+            }}
+          >
             <div className="absolute w-[50px] h-[50px] rounded-lg flex justify-center items-center bottom-2 right-2 bg-black text-white p-4 cursor-pointer">
               +
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p className="text-sm">Create New Chat</p>
+            <p className="text-sm">Create New Group</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

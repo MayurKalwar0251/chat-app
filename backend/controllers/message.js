@@ -3,9 +3,10 @@ const Message = require("../models/message");
 
 const sendMessage = async (req, res) => {
   try {
-    const { receiverId, content, chatId } = req.body;
+    const { content, chatId } = req.body;
+    const myId = req.user._id;
 
-    if (!receiverId || !content || !chatId) {
+    if (!content || !chatId) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -14,9 +15,15 @@ const sendMessage = async (req, res) => {
 
     const sender = req.user._id;
 
+    const chat = await Chat.findById(chatId);
+
+    const users = chat.users.filter((c) => c.toString() !== myId.toString());
+
+    const recv = users;
+
     const msg = await Message.create({
       sender,
-      receiver: receiverId,
+      receiver: recv,
       content,
       chatBW: chatId,
     });

@@ -3,7 +3,7 @@ const {
   createOneToOneChat,
   fetchChats,
   createGroupChat,
-  searchUserChats,
+  searchUser,
   checkOrCreateChat,
   fetchChatsById,
 } = require("../controllers/chat");
@@ -21,12 +21,15 @@ chatRouter.get("/", isAuthenticated, fetchChats);
 chatRouter.get("/:cId", isAuthenticated, fetchChatsById);
 
 // for fetching chats of logged in user
-chatRouter.get("/", isAuthenticated, createGroupChat);
+chatRouter.post("/group", isAuthenticated, createGroupChat);
+
 // for fetching chats of logged in user
-// chatRouter.get("/", isAuthenticated, fetchChats);
+chatRouter.post("/group", isAuthenticated, createGroupChat);
 
 // for searching user so it can create chat with him
-chatRouter.post("/search", isAuthenticated, searchUserChats);
+chatRouter.post("/search", isAuthenticated, searchUser);
+
+chatRouter.post("/search", isAuthenticated, searchUser);
 
 // for searching user so it can create chat with him
 chatRouter.post("/check", isAuthenticated, checkOrCreateChat);

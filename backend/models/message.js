@@ -10,7 +10,7 @@ const messageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    receiver: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    receiver: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     chatBW: { type: mongoose.Schema.Types.ObjectId, ref: "Chat" },
   },
   { timestamps: true, strictPopulate: false }
