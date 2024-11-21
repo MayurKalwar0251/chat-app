@@ -12,7 +12,6 @@ import {
 } from "@radix-ui/react-tooltip";
 import { UserChatContext } from "@/context/chatContext";
 import SearchItem from "./SearchItem";
-import { getUserChatById } from "@/context/Chats/Chats";
 
 const ChatList = ({ onSelectChat, chats, onSelectSearchChat, socket }) => {
   const {

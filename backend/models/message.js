@@ -13,7 +13,7 @@ const messageSchema = new mongoose.Schema(
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     chatBW: { type: mongoose.Schema.Types.ObjectId, ref: "Chat" },
   },
-  { timestamps: true }
+  { timestamps: true, strictPopulate: false }
 );
 
 const Message = mongoose.model("Message", messageSchema);

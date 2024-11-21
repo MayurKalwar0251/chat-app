@@ -57,9 +57,12 @@ const fetchMessages = async (req, res) => {
     const messages = await Message.find({
       chatBW: cId,
     })
-      .populate("sender", "-password")
-      .populate("receiver", "-password")
-      .populate("chatBW")
+      .populate("sender", "-password") // Populate sender, excluding the password field
+      .populate("receiver", "-password") // Populate receiver, excluding the password field
+      .populate({
+        path: "chatBW",
+        populate: { path: "users", select: "-password" }, // Populate users inside chatBW
+      })
       .sort({ createdAt: 1 }); // Fetch messages in ascending order (oldest to newest)
 
     res.status(200).json({
