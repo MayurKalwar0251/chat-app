@@ -74,7 +74,7 @@ const sendToken = async (user, statusCode, message, res) => {
   const options = {
     expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
     httpOnly: false, // Prevents client-side JavaScript access
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax", // Allow cross-site cookies only in production
+    sameSite: "None", // Allow cross-site cookies only in production
     secure: true, // Only use `secure` in production
   };
 
