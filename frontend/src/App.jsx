@@ -19,6 +19,9 @@ function App() {
   useEffect(() => {
     const checkCookiesAndDispatch = () => {
       const userToken = document.cookie.includes("token");
+
+      console.log("USERTOEKN", userToken, document.cookie);
+
       if (userToken) {
         getUserDetails(setIsAuthen, setUser, setLoading, setError);
         getUserChats(setChats, setLoadingChats, setErrorChats);
