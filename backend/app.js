@@ -8,6 +8,7 @@ const messageRouter = require("./routes/message");
 const cors = require("cors");
 
 const app = express();
+dotenv.config();
 
 app.use(express.json());
 
@@ -19,8 +20,7 @@ app.use(
     credentials: true,
   })
 );
-
-dotenv.config();
+console.log(process.env.FRONTEND_URL);
 
 connectDb();
 
