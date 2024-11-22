@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "https://chat-app-green-two-75.vercel.app",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
@@ -42,7 +42,7 @@ const server = app.listen(process.env.PORT, () => {
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "https://chat-app-green-two-75.vercel.app",
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   },
 });
