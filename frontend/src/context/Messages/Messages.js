@@ -24,14 +24,16 @@ export const getUserChatsMessages = async (
   }
 };
 
-export const sendUserMessage = async (
+export const sendUserMessage = async ({
   content,
   chatId,
   setMessages,
   setLoadingMessages,
   setErrorMessages,
-  messages
-) => {
+  messages,
+  fileContent,
+  fileType,
+}) => {
   try {
     setLoadingMessages(true);
     const response = await axios.post(
@@ -39,6 +41,8 @@ export const sendUserMessage = async (
       {
         content,
         chatId,
+        fileContent,
+        fileType,
       },
       {
         withCredentials: true,

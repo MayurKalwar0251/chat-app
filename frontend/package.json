@@ -14,6 +14,7 @@
     "@radix-ui/react-scroll-area": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.4",
+    "@wavesurfer/react": "^1.0.7",
     "axios": "^1.7.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -21,11 +22,13 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
+    "react-mic": "^12.4.6",
     "react-router-dom": "^6.28.0",
     "react-scrollable-feed": "^2.0.2",
     "socket.io-client": "^4.8.1",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "wavesurfer.js": "^7.8.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

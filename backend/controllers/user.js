@@ -73,9 +73,9 @@ const sendToken = async (user, statusCode, message, res) => {
 
   const options = {
     expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-    httpOnly: false, // Prevents client-side JavaScript access
-    sameSite: "None", // Allow cross-site cookies only in production
-    secure: true, // Only use `secure` in production
+    httpOnly: false,
+    sameSite: "None",
+    secure: true,
   };
 
   res.status(statusCode).cookie("token", token, options).json({

@@ -39,12 +39,14 @@ const server = app.listen(process.env.PORT, () => {
 });
 
 const io = require("socket.io")(server, {
-  pingTimeout: 60000,
+  pingTimeout: 10000,
   cors: {
     origin: process.env.FRONTEND_URL,
     credentials: true,
   },
 });
+
+const onlineUsers = {}; // will store userid who are online
 
 io.on("connection", (socket) => {
   console.log("Connected To Socket IO");
@@ -55,8 +57,20 @@ io.on("connection", (socket) => {
     if (!userId) {
       return socket.emit("error", "UserId is required");
     }
+
+    onlineUsers[userId] = socket.id;
     socket.join(userId);
     socket.emit("connected");
+
+    // Notify others that this user is online
+    socket.broadcast.emit("user online", userId);
+
+    // Send the current list of online users to the new user
+    socket.emit("all users online", onlineUsers);
+    console.log("SETUPP ", userId, socket.id);
+    console.log(onlineUsers);
+
+    // notifying other users
   });
 
   // Join chat room
@@ -64,6 +78,7 @@ io.on("connection", (socket) => {
     if (!chatId) {
       return socket.emit("error", "ChatId is required");
     }
+
     socket.join(chatId);
   });
 
@@ -98,6 +113,16 @@ io.on("connection", (socket) => {
   // Handle disconnections
   socket.on("disconnect", () => {
     console.log("User disconnected");
+    const disconnectedUser = Object.keys(onlineUsers).find(
+      (key) => onlineUsers[key] === socket.id
+    );
+
+    if (disconnectedUser) {
+      delete onlineUsers[disconnectedUser]; // Remove from online users
+
+      // Notify others that this user is offline
+      socket.broadcast.emit("user offline", disconnectedUser);
+    }
   });
 
   // Handle errors

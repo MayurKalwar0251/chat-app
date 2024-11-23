@@ -23,7 +23,7 @@ const Login = () => {
     );
 
     if (data.success) {
-      // window.location.reload();
+      window.location.reload();
     }
   };
 

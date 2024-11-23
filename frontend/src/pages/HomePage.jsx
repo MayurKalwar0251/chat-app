@@ -20,7 +20,7 @@ export default function HomePage() {
 
   const [createGroupModal, setCreateGroupModal] = React.useState(false);
 
-  const { user } = React.useContext(UserContext);
+  const { user, onlineUsers, setOnlineUsers } = React.useContext(UserContext);
   const { messages, setMessages, setLoadingMessages, setErrorMessages } =
     React.useContext(ChatMessageContext);
 
@@ -36,12 +36,43 @@ export default function HomePage() {
   const socketRef = React.useRef(null);
 
   React.useEffect(() => {
+    // Initialize socket connection
     socketRef.current = io(serverHost, { withCredentials: true });
 
     socketRef.current.emit("setup", user._id);
+
+    // Register event listeners first
     socketRef.current.on("connected", () => {
       console.log("SOCKET CONNECTED");
     });
+
+    socketRef.current.on("all users online", (allUsers) => {
+      Object.keys(allUsers).map((i) =>
+        setOnlineUsers((prev) => ({ ...prev, [i]: true }))
+      );
+      setOnlineUsers((prev) => ({
+        ...prev,
+        ...Object.keys(allUsers).reduce((acc, userId) => {
+          acc[userId] = true;
+          return acc;
+        }, {}),
+      }));
+    });
+
+    socketRef.current.on("user online", (userId) => {
+      console.log("WEAREHERE", userId);
+      setOnlineUsers((prev) => ({ ...prev, [userId]: true }));
+    });
+
+    socketRef.current.on("user offline", (userId) => {
+      setOnlineUsers((prev) => {
+        const updatedUsers = { ...prev };
+        delete updatedUsers[userId];
+        return updatedUsers;
+      });
+    });
+
+    // After listeners are registered, emit the setup event
 
     return () => {
       // Clean up socket connection
@@ -50,6 +81,31 @@ export default function HomePage() {
       }
     };
   }, [user._id]);
+
+  React.useEffect(() => {
+    console.log("onlineUsers updated:", onlineUsers);
+  }, [onlineUsers]);
+
+  React.useEffect(() => {
+    socketRef.current.on("user online", (userId) => {
+      console.log("WEAREHERE", userId);
+
+      setOnlineUsers((prev) => ({ ...prev, [userId]: true }));
+    });
+
+    socketRef.current.on("user offline", (userId) => {
+      setOnlineUsers((prev) => {
+        const updatedUsers = { ...prev };
+        delete updatedUsers[userId];
+        return updatedUsers;
+      });
+    });
+
+    return () => {
+      socketRef.current.off("user online");
+      socketRef.current.off("user offline");
+    };
+  });
 
   const handleSelectChat = async (chatId, users) => {
     setSelectedChat((prev) => (prev !== chatId ? chatId : chatId));
@@ -74,6 +130,8 @@ export default function HomePage() {
   };
 
   const handleSelectSearchChat = async (userId) => {
+    console.log(userId);
+
     const chat = await checkOrCreateChat(
       userId,
       setChats,
@@ -105,6 +163,8 @@ export default function HomePage() {
 
   React.useEffect(() => {
     socketRef.current.on("message recieved", (newMsgRcv) => {
+      console.log(newMsgRcv);
+
       getUserChatById(
         newMsgRcv.chatBW._id,
         chats,

@@ -12,6 +12,7 @@ import {
 } from "@radix-ui/react-tooltip";
 import { UserChatContext } from "@/context/chatContext";
 import SearchItem from "./SearchItem";
+import { UserContext } from "@/context/context";
 
 const ChatList = ({
   onSelectChat,
@@ -29,9 +30,15 @@ const ChatList = ({
     setErrorChats,
   } = useContext(UserChatContext);
 
+  const { onlineUsers } = useContext(UserContext);
+
   const hasSearchResults =
     searchedUserAndChats && searchedUserAndChats.length > 0;
 
+  // useEffect(() => {
+  // }, [onlineUsers]);
+
+  console.log("WE WILL RERENDER IF CHANGES");
   return (
     <div className="flex h-full flex-col border-r relative ">
       <header className="flex h-16 items-center justify-between gap-4 border-b px-4">
@@ -50,24 +57,26 @@ const ChatList = ({
       <SearchContainer />
       <div className="flex-1 overflow-y-auto">
         <ScrollArea className="flex-1">
-          <div className="space-y-1 p-2">
-            {hasSearchResults
-              ? searchedUserAndChats.map((searchUser) => (
-                  <SearchItem
-                    key={searchUser._id}
-                    searchUser={searchUser}
-                    onSelect={() => onSelectSearchChat(searchUser._id)}
-                  />
-                ))
-              : chats.map((chat) => (
-                  <ChatItem
-                    key={chat._id}
-                    chat={chat}
-                    onSelect={() => onSelectChat(chat._id, chat.users)}
-                    selectedChat={selectedChat}
-                  />
-                ))}
-          </div>
+          {Object.keys(onlineUsers).length > 0 && (
+            <div className="space-y-1 p-2">
+              {hasSearchResults
+                ? searchedUserAndChats.map((searchUser) => (
+                    <SearchItem
+                      key={searchUser._id}
+                      searchUser={searchUser}
+                      onSelect={() => onSelectSearchChat(searchUser._id)}
+                    />
+                  ))
+                : chats.map((chat) => (
+                    <ChatItem
+                      key={chat._id}
+                      chat={chat}
+                      onSelect={() => onSelectChat(chat._id, chat.users)}
+                      selectedChat={selectedChat}
+                    />
+                  ))}
+            </div>
+          )}
         </ScrollArea>
       </div>
 
@@ -76,7 +85,6 @@ const ChatList = ({
           <TooltipTrigger
             asChild
             onClick={() => {
-
               setCreateGroupModal(true);
             }}
           >

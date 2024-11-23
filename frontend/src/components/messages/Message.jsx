@@ -24,7 +24,14 @@ function Message({ message }) {
           "bg-muted": !me,
         })}
       >
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        {message.fileContent ? (
+          <audio controls>
+            <source src={message.fileContent} type="audio/mpeg" />
+            Your browser does not support the audio element.
+          </audio>
+        ) : (
+          <p className="whitespace-pre-wrap">{message.content}</p>
+        )}
         <div className="flex items-center justify-end gap-1">
           <span className="text-xs opacity-75">{message.createdAt}</span>
           {me && <Check className="h-3 w-3 opacity-75" />}

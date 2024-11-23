@@ -9,6 +9,7 @@ const UserProvider = ({ children }) => {
   const [isAuthen, setIsAuthen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState({});
   return (
     <UserContext.Provider
       value={{
@@ -20,6 +21,8 @@ const UserProvider = ({ children }) => {
         setLoading,
         error,
         setError,
+        onlineUsers,
+        setOnlineUsers,
       }}
     >
       {children}

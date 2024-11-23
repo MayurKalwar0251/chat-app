@@ -3,13 +3,13 @@ const Message = require("../models/message");
 
 const sendMessage = async (req, res) => {
   try {
-    const { content, chatId } = req.body;
+    const { content, chatId, fileContent, fileType } = req.body;
     const myId = req.user._id;
 
-    if (!content || !chatId) {
+    if (!chatId) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "Chat Id is required",
       });
     }
 
@@ -26,6 +26,8 @@ const sendMessage = async (req, res) => {
       receiver: recv,
       content,
       chatBW: chatId,
+      fileContent,
+      fileType,
     });
 
     await Chat.findByIdAndUpdate(chatId, { latestMessage: msg });
