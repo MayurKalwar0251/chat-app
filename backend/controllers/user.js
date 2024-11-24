@@ -71,10 +71,12 @@ const generateToken = async (userID) => {
 const sendToken = async (user, statusCode, message, res) => {
   const token = await generateToken(user._id);
 
+  console.log(process.env.NODE_ENV);
+
   const options = {
-    expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-    httpOnly: false,
-    sameSite: "None",
+    maxAge: 1 * 24 * 60 * 60 * 1000,
+    httpOnly: process.env.NODE_ENV == "production" ? true : false,
+    sameSite: "none",
     secure: true,
   };
 
