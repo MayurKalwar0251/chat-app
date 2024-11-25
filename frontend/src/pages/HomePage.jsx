@@ -163,7 +163,6 @@ export default function HomePage() {
 
   React.useEffect(() => {
     socketRef.current.on("message recieved", (newMsgRcv) => {
-      console.log(newMsgRcv);
 
       getUserChatById(
         newMsgRcv.chatBW._id,

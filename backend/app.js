@@ -6,11 +6,13 @@ const chatRouter = require("./routes/chat");
 const cookieParser = require("cookie-parser");
 const messageRouter = require("./routes/message");
 const cors = require("cors");
+const User = require("./models/user");
 
 const app = express();
 dotenv.config();
 
 app.use(express.json());
+// app.use(express.urlencoded(true));
 
 app.use(cookieParser());
 
@@ -111,11 +113,13 @@ io.on("connection", (socket) => {
   });
 
   // Handle disconnections
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
+  socket.on("disconnect", async () => {
     const disconnectedUser = Object.keys(onlineUsers).find(
       (key) => onlineUsers[key] === socket.id
     );
+
+    console.log("User disconnected ", disconnectedUser);
+    await User.findByIdAndUpdate(disconnectedUser, { lastSeen: new Date() });
 
     if (disconnectedUser) {
       delete onlineUsers[disconnectedUser]; // Remove from online users

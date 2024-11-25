@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
 import { Button } from "../ui/button";
-import { ArrowLeft, Menu } from "lucide-react";
+import { ArrowLeft, Image, Menu, Mic } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import Message from "./Message";
@@ -15,6 +15,8 @@ import { getUserChatById } from "@/context/Chats/Chats";
 import { UserChatContext } from "@/context/chatContext";
 import AudioMessage from "./AudioMessage";
 import axios from "axios";
+import SendImageVideo from "./SendImageVideo";
+import { uploadToCloudinary } from "@/utils/uploadToCloudinary";
 
 function MessageContainer({ chatId, onBack, chats, socket }) {
   const chat = chats.find((c) => c._id === chatId);
@@ -32,10 +34,18 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
   const [isTyping, setIsTyping] = useState(false); // For tracking other user's typing status
   const [userTypingDetails, setUserTypingDetails] = useState(null);
 
+  // states for recording
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [showOnline, setShowOnline] = useState(false);
+
+  // states for images and videos
+  const [files, setFiles] = useState([]);
+  const [fileType, setFileType] = useState("image");
+
+  // state for disabling button when sending eg loading
+  const [sendingMsgLoading, setSendingMsgLoading] = useState(false);
 
   // Determine recipient ID
   useEffect(() => {
@@ -51,38 +61,16 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
     }
   }, [chat.users, onlineUsers, chat.isGroupChat, user._id]);
 
-  const uploadAudio = async () => {
-    if (!audioBlob) return alert("No audio recorded!");
-
-    const formData = new FormData();
-    formData.append("file", audioBlob);
-    formData.append("upload_preset", "media_upload_preset"); // Replace with your preset
-    formData.append("cloud_name", "dfiw6zwz0"); // Replace with your cloud name
-
-    try {
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/dfiw6zwz0/upload`,
-        formData
-      );
-
-      const uploadedUrl = response.data.secure_url;
-      console.log("Uploaded Audio URL:", uploadedUrl);
-      return uploadedUrl;
-    } catch (error) {
-      console.error("Error uploading audio:", error);
-      alert("Failed to upload audio!");
-    }
-  };
-
   // Handle sending messages
   async function handleSubmit(e) {
     e.preventDefault();
+    setSendingMsgLoading(true);
 
     let fileContent = null;
     let fileType = null;
 
     if (audioBlob) {
-      fileContent = await uploadAudio();
+      fileContent = await uploadToCloudinary({ file: audioBlob });
       fileType = "audio";
     }
 
@@ -104,11 +92,12 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
       socket.emit("stop typing", selectedChat);
     }
     socket.emit("new message", msg);
-    // setMessages((prevMessages) => [...prevMessages, msg]);
+    setMessages((prevMessages) => [...prevMessages, msg]);
     getUserChatById(chatId, chats, setChats, setLoadingChats, setErrorChats);
     setAudioBlob(null);
     setAudioUrl("");
     setContent("");
+    setSendingMsgLoading(false);
   }
 
   // Socket event listeners for typing and receiving messages
@@ -158,13 +147,64 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
 
   useEffect(() => {
     socket.on("message recieved", (newMsgRcv) => {
-      setMessages([...messages, newMsgRcv]);
+      if (chatId == newMsgRcv.chatBW._id && user._id != newMsgRcv.sender._id)
+        setMessages([...messages, newMsgRcv]);
     });
 
     return () => {
       socket.off("message recieved");
     };
   });
+
+  const getUserName = (users) => {
+    return users[0]._id === user._id ? users[1].name : users[0].name;
+  };
+
+  const handleImagesSubmit = async (e) => {
+    e.preventDefault();
+    setSendingMsgLoading(true);
+
+    if (files && files.length > 0) {
+      const messagesArray = [];
+      const fileUploadPromises = files.map(async (file) => {
+        const fileContent = await uploadToCloudinary({ file });
+        const fileTypeOfFile = fileType; // Assuming all files are images; adapt as needed.
+
+        if (!fileContent) return;
+
+        const msg = await sendUserMessage({
+          content: content.trim(),
+          chatId: chat._id,
+          setMessages,
+          setLoadingMessages,
+          setErrorMessages,
+          messages,
+          fileContent,
+          fileType: fileTypeOfFile,
+        });
+        messagesArray.push(msg);
+
+        socket.emit("new message", msg);
+      });
+
+      // Wait for all file uploads and message sends to complete
+      await Promise.all(fileUploadPromises);
+
+      console.log("messagesArray", messagesArray);
+
+      setMessages((prevMessages) => [...prevMessages, ...messagesArray]);
+      // Update the chat state once after all messages are sent
+      getUserChatById(chatId, chats, setChats, setLoadingChats, setErrorChats);
+
+      // Cleanup and reset states
+      setFiles([]);
+      setFileType("image");
+      setAudioBlob(null);
+      setAudioUrl("");
+      setContent("");
+      setSendingMsgLoading(false);
+    }
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -181,9 +221,13 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
         </Button>
         <div className="flex flex-1 items-center justify-between">
           <div>
-            <h2 className="font-semibold">{chat.chatName}</h2>
+            {chat.isGroupChat ? (
+              <h2 className="font-semibold">{chat.chatName}</h2>
+            ) : (
+              <h2 className="font-semibold">{getUserName(chat.users)}</h2>
+            )}
             <p className="text-sm text-muted-foreground">
-              {showOnline ? "Online" : "Offline"}
+              {showOnline ? "Online" : `${user.lastSeen}`}
             </p>
           </div>
           <Button variant="ghost" size="icon">
@@ -207,21 +251,35 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
         <span className="px-4">{userTypingDetails.name} Typing...</span>
       )}
 
+// add hello world
+      
       {/* Footer */}
       <footer className="border-t p-4 flex items-center gap-3 justify-between">
-        <div className="audio-message-container ">
-          <AudioMessage
-            audioBlob={audioBlob}
-            setAudioBlob={setAudioBlob}
-            audioUrl={audioUrl}
-            setAudioUrl={setAudioUrl}
-            isRecording={isRecording}
-            setIsRecording={setIsRecording}
-          />
-        </div>
+        {files.length == 0 && (
+          <div className="audio-message-container ">
+            <AudioMessage
+              audioBlob={audioBlob}
+              setAudioBlob={setAudioBlob}
+              audioUrl={audioUrl}
+              setAudioUrl={setAudioUrl}
+              isRecording={isRecording}
+              setIsRecording={setIsRecording}
+            />
+          </div>
+        )}
+        {!audioBlob && !isRecording && (
+          <div className="image-message-container ">
+            <SendImageVideo
+              files={files}
+              setFiles={setFiles}
+              fileType={fileType}
+              setFileType={setFileType}
+            />
+          </div>
+        )}
 
         {/* Form for sending text messages */}
-        {!isRecording && !audioBlob && (
+        {!isRecording && !audioBlob && files.length == 0 && (
           <form
             onSubmit={handleSubmit}
             className="message-form flex gap-2 justify-between max-h-12 w-full"
@@ -246,15 +304,25 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
         )}
 
         {/* Secondary button for sending the message manually */}
-        <button
-          onClick={handleSubmit}
-          className={`bg-black text-white p-2 rounded-md text-right ${
-            audioBlob ? "block" : "hidden"
-          }`}
-          disabled={isRecording}
-        >
-          <SendIcon />
-        </button>
+        {audioBlob && (
+          <Button
+            onClick={handleSubmit}
+            className="bg-black text-white p-2 rounded-md text-right"
+            disabled={sendingMsgLoading}
+          >
+            <SendIcon />
+          </Button>
+        )}
+
+        {files.length > 0 && (
+          <Button
+            onClick={handleImagesSubmit}
+            className="bg-black text-white p-2 rounded-md text-right"
+            disabled={sendingMsgLoading}
+          >
+            <SendIcon />
+          </Button>
+        )}
       </footer>
     </div>
   );

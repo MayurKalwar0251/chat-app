@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema(
       minLen: [6, "Minimum Length Should be 6"],
       select: false,
     },
+    avatar: {
+      type: String,
+    },
+    lastSeen: { type: Date },
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true, strictPopulate: false }

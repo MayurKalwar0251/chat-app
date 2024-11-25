@@ -50,7 +50,7 @@ export const sendUserMessage = async ({
     );
 
     if (response.data.success) {
-      setMessages([...messages, response.data.messageSend]);
+      // setMessages([...messages, response.data.messageSend]);
       setLoadingMessages(false);
 
       return response.data.messageSend;

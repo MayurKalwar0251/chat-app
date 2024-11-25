@@ -12,12 +12,52 @@ const Register = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [avatar, setAvatar] = useState("");
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file); // Save the file for upload
+      setImagePreview(URL.createObjectURL(file)); // Generate preview URL
+    }
+  };
+
+  const uploadAvatar = async () => {
+    if (!imageFile) return alert("No Image Selected");
+
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("upload_preset", "media_upload_preset"); // Replace with your preset
+    formData.append("cloud_name", "dfiw6zwz0"); // Replace with your cloud name
+
+    try {
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/dfiw6zwz0/upload`,
+        formData
+      );
+
+      const uploadedUrl = response.data.secure_url;
+      console.log("Uploaded Audio URL:", uploadedUrl);
+      return uploadedUrl;
+    } catch (error) {
+      console.error("Error uploading audio:", error);
+      alert("Failed to upload audio!");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (imageFile) {
+      const uploadedUrl = await uploadAvatar();
+      setAvatar(uploadedUrl);
+    }
+
     const { data } = await axios.post(
       `${server}/user/`,
-      { name, phoneNo, email, password },
+      { name, phoneNo, email, password, avatar: avatar == "" ? null : avatar },
       { withCredentials: true }
     );
 
@@ -36,6 +76,24 @@ const Register = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="max-w-md mx-auto max-h-12  items-center flex gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                placeholder="Select"
+                className=" block w-full text-sm text-gray-500 border border-gray-300 rounded-md cursor-pointer focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+              {imagePreview && (
+                <div className="">
+                  <img
+                    src={imagePreview}
+                    alt="Selected Profile"
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
             <div>
               <label
                 htmlFor="email"

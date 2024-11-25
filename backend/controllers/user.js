@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 
 const createUser = async (req, res) => {
   const { name, email, phoneNo, password } = req.body;
+  const avatar =
+    req.body.avatar ??
+    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
 
   if (!name || !email || !password || !phoneNo) {
     return res.status(500).json({
@@ -24,7 +27,13 @@ const createUser = async (req, res) => {
 
   const hashPass = await bcrypt.hash(password, 10);
 
-  user = await User.create({ name, email, password: hashPass, phoneNo });
+  user = await User.create({
+    name,
+    email,
+    password: hashPass,
+    phoneNo,
+    avatar,
+  });
 
   sendToken(user, 200, "User Created Successfully", res);
 };
@@ -78,6 +87,8 @@ const sendToken = async (user, statusCode, message, res) => {
     httpOnly: process.env.NODE_ENV == "production" ? true : false,
     sameSite: "none",
     secure: true,
+    path: "/",
+    domain: process.env.FRONTEND_URL,
   };
 
   res.status(statusCode).cookie("token", token, options).json({

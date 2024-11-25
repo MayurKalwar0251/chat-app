@@ -1,6 +1,6 @@
 import { UserContext } from "@/context/context";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import { Mic } from "lucide-react";
+import { Image, Mic, Video } from "lucide-react";
 import React, { useContext, useEffect, useState } from "react";
 
 function ChatItem({ chat, onSelect, selectedChat }) {
@@ -20,6 +20,15 @@ function ChatItem({ chat, onSelect, selectedChat }) {
   const getUserName = (users) => {
     return users[0]._id === user._id ? users[1].name : users[0].name;
   };
+  const getUserAvatar = (users) => {
+    console.log("USERS", users);
+
+    const avatar =
+      users[0]._id === user._id ? users[1].avatar : users[0].avatar;
+    console.log("AVATAR ", avatar);
+
+    return avatar;
+  };
 
   return (
     <button
@@ -31,12 +40,23 @@ function ChatItem({ chat, onSelect, selectedChat }) {
           : { backgroundColor: "grey" }
       }
     >
-      {/*
-       <Avatar>
-        <AvatarImage src={chat.avatar} alt={chat.name} />
-        <AvatarFallback>{chat.name[0]}</AvatarFallback>
-      </Avatar>
-      */}
+      <div className="relative">
+        <Avatar>
+          <AvatarImage
+            src={getUserAvatar(chat.users)}
+            className="w-10 h-10 rounded-full"
+            alt={chat.name}
+          />
+          <AvatarFallback>{chat.name}</AvatarFallback>
+        </Avatar>
+        {/* Status dot */}
+        <div
+          className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+            showOnline ? "bg-green-500" : "bg-red-500"
+          }`}
+        ></div>
+      </div>
+
       <div className="flex-1 overflow-hidden">
         <div className="flex items-center justify-between">
           {chat.isGroupChat ? (
@@ -45,7 +65,6 @@ function ChatItem({ chat, onSelect, selectedChat }) {
             <span className="font-medium">{getUserName(chat.users)}</span>
           )}
         </div>
-        {showOnline == true && <span>Online</span>}
 
         {chat.latestMessage && (
           <div className="flex items-center gap-2">
@@ -58,10 +77,14 @@ function ChatItem({ chat, onSelect, selectedChat }) {
               </span>
             ) : chat.latestMessage.fileType === "image" ? (
               // Display "Image" if file type is image
-              <span className="text-sm text-black">Image</span>
+              <span className="flex gap-2 text-sm text-black">
+                <Image /> Image
+              </span>
             ) : chat.latestMessage.fileType === "video" ? (
               // Display "Video" if file type is video
-              <span className="text-sm text-black">Video</span>
+              <span className="flex gap-2 text-sm text-black">
+                <Video /> Video
+              </span>
             ) : (
               // If it's a text message, just display the content
               <span className="truncate text-sm text-black">
