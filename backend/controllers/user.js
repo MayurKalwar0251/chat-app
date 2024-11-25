@@ -88,7 +88,6 @@ const sendToken = async (user, statusCode, message, res) => {
     sameSite: "none",
     secure: true,
     path: "/",
-    domain: process.env.FRONTEND_URL,
   };
 
   res.status(statusCode).cookie("token", token, options).json({
