@@ -1,5 +1,11 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -12,10 +18,11 @@ import { getUserChats } from "./context/Chats/Chats";
 import { UserChatContext } from "./context/chatContext";
 
 function App() {
-  const { setUser, user, setIsAuthen, setLoading, setError } =
+  const { isAuthen, setUser, user, setIsAuthen, setLoading, setError } =
     useContext(UserContext);
   const { chats, setChats, setLoadingChats, setErrorChats } =
     useContext(UserChatContext);
+
   useEffect(() => {
     const checkCookiesAndDispatch = () => {
       const userToken = document.cookie.includes("token");

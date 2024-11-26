@@ -4,38 +4,42 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const createUser = async (req, res) => {
-  const { name, email, phoneNo, password } = req.body;
-  const avatar =
-    req.body.avatar ??
-    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+  try {
+    const { name, email, phoneNo, password } = req.body;
+    const avatar =
+      req.body.avatar ??
+      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
 
-  if (!name || !email || !password || !phoneNo) {
-    return res.status(500).json({
-      success: false,
-      message: "All Fields Are Required",
+    if (!name || !email || !password || !phoneNo) {
+      return res.status(500).json({
+        success: false,
+        message: "All Fields Are Required",
+      });
+    }
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      return res.status(500).json({
+        success: false,
+        message: "User Already Exists",
+      });
+    }
+
+    const hashPass = await bcrypt.hash(password, 10);
+
+    user = await User.create({
+      name,
+      email,
+      password: hashPass,
+      phoneNo,
+      avatar,
     });
+
+    sendToken(user, 200, "User Created Successfully", res);
+  } catch (error) {
+    console.log(error.message, " Error Message ", error);
   }
-
-  let user = await User.findOne({ email });
-
-  if (user) {
-    return res.status(500).json({
-      success: false,
-      message: "User Already Exists",
-    });
-  }
-
-  const hashPass = await bcrypt.hash(password, 10);
-
-  user = await User.create({
-    name,
-    email,
-    password: hashPass,
-    phoneNo,
-    avatar,
-  });
-
-  sendToken(user, 200, "User Created Successfully", res);
 };
 
 const loginUser = async (req, res) => {
@@ -78,7 +82,7 @@ const generateToken = async (userID) => {
 };
 
 const sendToken = async (user, statusCode, message, res) => {
-  const token = await generateToken(user._id);
+  const token = await generateToken(user._id);  
 
   console.log(process.env.NODE_ENV);
 

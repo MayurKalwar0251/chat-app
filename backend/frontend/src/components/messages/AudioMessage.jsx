@@ -31,7 +31,6 @@ const AudioMessage = ({
         waveColor: "#ddd",
         progressColor: "#ff4081",
         cursorColor: "#000",
-        height: 100,
         responsive: true,
         backend: "WebAudio",
         normalize: true,

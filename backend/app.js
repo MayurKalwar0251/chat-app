@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const messageRouter = require("./routes/message");
 const cors = require("cors");
 const User = require("./models/user");
+const path = require("path");
 
 const app = express();
 dotenv.config();
@@ -23,19 +24,24 @@ app.use(
   })
 );
 
+app.use(express.static(path.join(__dirname, "dist")));
+
 connectDb();
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/chat", chatRouter);
 app.use("/api/v1/message", messageRouter);
 
-app.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Server Running",
-  });
-});
+// app.get("*", (req, res) => {
+//   console.log("HOME PAGE JOINED");
 
+//   res.sendFile(path.join(__dirname, "dist", "index.html"));
+// });
+
+app.get("/", (req, res) => {
+  app.use(express.static(path.resolve(__dirname, "frontend", "dist")));
+  res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+});
 const server = app.listen(process.env.PORT, () => {
   console.log(`Connected at PORT `, process.env.PORT);
 });

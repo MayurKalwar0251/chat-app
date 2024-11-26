@@ -5,6 +5,9 @@ import { server } from "../utils/server";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { UserContext } from "@/context/context";
+import { getUserDetails } from "@/context/Users/User";
+import { getUserChats } from "@/context/Chats/Chats";
+import { UserChatContext } from "@/context/chatContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,18 +15,30 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [visible, setVisible] = useState(false);
 
-  const { isAuthen, setIsAuthen } = useContext(UserContext);
+  const { setIsAuthen, setUser, setLoading, setError } =
+    useContext(UserContext);
+  const { setChats, setLoadingChats, setErrorChats } =
+    useContext(UserChatContext);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { data } = await axios.post(
-      `${server}/user/login`,
-      { email, password },
-      { withCredentials: true }
-    );
+    try {
+      const { data } = await axios.post(
+        `${server}/user/login`,
+        { email, password },
+        { withCredentials: true }
+      );
 
-    if (data.success) {
-      window.location.reload();
+      if (data.success) {
+        getUserDetails(setIsAuthen, setUser, setLoading, setError);
+        getUserChats(setChats, setLoadingChats, setErrorChats);
+      }
+
+      // navigate("/");
+      // window.location.reload();
+    } catch (error) {
+      console.log(error.message);
+      console.log(error);
     }
   };
 

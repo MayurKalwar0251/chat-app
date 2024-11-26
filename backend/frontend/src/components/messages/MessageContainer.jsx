@@ -251,8 +251,6 @@ function MessageContainer({ chatId, onBack, chats, socket }) {
         <span className="px-4">{userTypingDetails.name} Typing...</span>
       )}
 
-// add hello world
-      
       {/* Footer */}
       <footer className="border-t p-4 flex items-center gap-3 justify-between">
         {files.length == 0 && (
