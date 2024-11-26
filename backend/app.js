@@ -23,6 +23,13 @@ app.use(
     credentials: true,
   })
 );
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'none'; script-src 'self' https://vercel.live; style-src 'self'; connect-src 'self'; img-src 'self' data:;"
+  );
+  next();
+});
 
 app.use(express.static(path.join(__dirname, "dist")));
 
